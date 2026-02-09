@@ -37,6 +37,7 @@ export interface Project {
   created_at: string;
   updated_at: string;
   is_contribution: boolean; // 핵심: 내 프로젝트 vs Contributed 구분
+  private?: boolean; // Private 레포 여부
   owner?: {
     login: string;
     avatar_url: string;

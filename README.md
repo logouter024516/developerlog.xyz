@@ -7,6 +7,11 @@
 ## ✨ Features
 
 - 🎯 **GitHub Projects Showcase**: Display your projects and contributions with glassmorphism card UI
+- 🔒 **Private Repository Support**: Show your private repos on portfolio (GitHub Token required)
+- 🎛️ **GUI Admin Panel**: Manage repositories with web interface - **settings apply to ALL visitors!**
+- 🌐 **GitHub-based Storage**: Admin settings saved to repository, shared across all users
+- 📊 **Two Filter Modes**: Blacklist (hide selected) or Whitelist (show only selected)
+- 🤖 **Auto-deploy**: GitHub Actions automatically deploys changes
 - 👆 **Real-time Multi-cursor System**: See other visitors' cursors moving in real-time (circular pulse animation)
 - 🎨 **Modern Glassmorphism Design**: Clean, minimal aesthetic inspired by examples with blur effects
 - 🔀 **Two-View System**: Switch between Home (profile) and Projects (repository list)
@@ -99,7 +104,16 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 # GitHub Configuration
 VITE_GITHUB_USERNAME=your_github_username
-VITE_GITHUB_TOKEN=your_github_personal_access_token  # Optional: increases rate limit
+VITE_GITHUB_TOKEN=your_github_personal_access_token  # Required: Private repos + Admin panel
+VITE_GITHUB_REPO_NAME=03_portfolio_web  # Your repository name
+
+# Admin Panel
+VITE_ADMIN_PASSWORD=admin123  # Password for /admin.html page
+
+# Repository Filtering (Optional - GUI Admin Panel is recommended!)
+# Note: Admin GUI saves to GitHub (all visitors see same settings)
+VITE_GITHUB_SHOW_ONLY_REPOS=repo1,repo2,repo3  # Show only these repos (whitelist)
+VITE_GITHUB_HIDE_REPOS=secret-project,old-repo  # Hide specific repos (blacklist)
 ```
 
 **Getting Supabase credentials:**
@@ -108,12 +122,38 @@ VITE_GITHUB_TOKEN=your_github_personal_access_token  # Optional: increases rate 
 2. Go to Project Settings > API
 3. Copy the Project URL and anon public key
 
-**Getting GitHub token (optional but recommended):**
+**Getting GitHub token (REQUIRED for Private repos):**
 
 1. Go to GitHub Settings > Developer settings > Personal access tokens
 2. Generate new token (classic)
-3. No special scopes needed for public repos
-4. This increases rate limit from 60 to 5000 requests/hour
+3. Select scopes:
+   - `repo` (Full control of private repositories) - **Required for private repos**
+   - `read:user` (Read user profile data) - Optional
+4. This also increases rate limit from 60 to 5000 requests/hour
+
+**Repository Filtering Options:**
+
+**🎛️ RECOMMENDED: Use GUI Admin Panel** (Priority 1)
+- Access: `https://your-site.github.io/admin.html`
+- Click checkboxes to show/hide repos
+- Settings saved in browser LocalStorage
+- No need to rebuild or redeploy!
+
+**⚙️ Alternative: Environment Variables** (Priority 2 - Fallback)
+- **`VITE_GITHUB_SHOW_ONLY_REPOS`**: Comma-separated list of repo names to display (whitelist mode)
+  - Example: `my-portfolio,awesome-project,cool-app`
+  - If set, ONLY these repos will be shown
+  - Leave empty to show all repos (default)
+
+- **`VITE_GITHUB_HIDE_REPOS`**: Comma-separated list of repo names to hide (blacklist mode)
+  - Example: `secret-project,test-repo,old-stuff`
+  - These repos will be excluded from the portfolio
+  - Works even if `SHOW_ONLY_REPOS` is not set
+
+**Priority Order:**
+1. GUI Admin Panel (LocalStorage) ← **Highest**
+2. Environment Variables (Build-time)
+3. Show all repos (Default)
 
 ### Development
 
@@ -182,6 +222,52 @@ Projects are fetched directly from **GitHub REST API** and automatically categor
 - **Contributed Projects**: Forked repositories or those you've contributed to
 
 No separate backend server needed - everything runs client-side!
+
+### Repository Filtering & Private Repos
+
+Control which repositories appear on your portfolio:
+
+- **Private Repository Support**: Display private repos with GitHub Token
+- **GUI Admin Panel**: Manage repos visually at `/admin.html` (password protected)
+- **GitHub-based Storage**: Admin settings saved to repository - **applies to ALL visitors**
+- **Auto-deploy**: GitHub Actions automatically deploys changes
+- **Whitelist Mode**: Show only specific repositories
+- **Blacklist Mode**: Hide specific repositories
+
+📚 **Detailed Documentation:**
+- [**GitHub Storage Guide**](GITHUB_STORAGE_GUIDE.md) - **⭐ New! Admin settings apply to everyone**
+- [GUI Admin Guide](ADMIN_GUI_GUIDE.md) - Click-to-filter with web interface
+- [Repository Filtering Guide](REPOSITORY_FILTERING.md) - Environment variable based filtering
+- [Usage Examples](USAGE_EXAMPLES.md) - 5 real-world scenarios
+
+🎯 **Quick Start (Admin Method):**
+1. Set `.env`: `VITE_GITHUB_TOKEN` with `repo` permission
+2. Access admin panel: `https://your-site.github.io/admin.html`
+3. Login (default password: `admin123`)
+4. Select filter mode: **Blacklist** (hide selected) or **Whitelist** (show only selected)
+5. Check/uncheck repos to show/hide
+6. Click "💾 설정 저장" (Save Settings)
+7. Wait 1-2 minutes for GitHub Actions to deploy
+8. All visitors see your filtered portfolio! ✅
+
+✅ **How it works:**
+- Admin saves settings → GitHub commits `public/repo-settings.json`
+- GitHub Actions auto-deploys
+- All visitors fetch the same settings file
+- Everyone sees the same filtered repos!
+
+📚 **Detailed Documentation:**
+- [GUI Admin Guide](GUI_ADMIN_GUIDE.md) - **Use web interface to manage repos (recommended)**
+- [Repository Filtering Guide](REPOSITORY_FILTERING.md) - Environment variable based filtering
+- [Usage Examples](USAGE_EXAMPLES.md) - 5 real-world scenarios
+- [Quick Summary](REPOSITORY_FILTERING_SUMMARY.md) - Overview of changes
+
+🎯 **Quick Start:**
+1. Access admin panel: `https://your-site.github.io/admin.html`
+2. Login (default password: `admin123`)
+3. Check/uncheck repos to show/hide
+4. Click "💾 설정 저장" (Save Settings)
+5. Go back to homepage to see changes!
 
 ## 📝 Scripts
 

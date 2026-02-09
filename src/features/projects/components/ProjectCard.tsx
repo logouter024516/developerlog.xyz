@@ -39,11 +39,18 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
             <h3 className="text-xl sm:text-2xl font-bold text-white truncate flex-1">
               {project.name}
             </h3>
-            {project.is_contribution && (
-              <span className="px-2 py-0.5 text-xs font-semibold bg-purple-500/30 text-purple-200 rounded-full border border-purple-400/30 shrink-0 ml-2">
-                Contributed
-              </span>
-            )}
+            <div className="flex items-center gap-2 shrink-0 ml-2">
+              {project.private && (
+                <span className="px-2 py-0.5 text-xs font-semibold bg-red-500/30 text-red-200 rounded-full border border-red-400/30">
+                  🔒 Private
+                </span>
+              )}
+              {project.is_contribution && (
+                <span className="px-2 py-0.5 text-xs font-semibold bg-purple-500/30 text-purple-200 rounded-full border border-purple-400/30">
+                  Contributed
+                </span>
+              )}
+            </div>
           </div>
           <p className="text-xs sm:text-sm text-gray-300 line-clamp-2 leading-relaxed">
             {project.description || 'No description'}

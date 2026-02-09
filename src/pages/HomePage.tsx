@@ -13,7 +13,7 @@ export const HomePage = () => {
   const [currentView, setCurrentView] = useState<'home' | 'projects'>('home');
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className="min-h-screen relative">
       {/* Animated background gradient */}
       <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 z-0" />
 
@@ -24,15 +24,15 @@ export const HomePage = () => {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-500/15 rounded-full blur-3xl float" style={{ animationDelay: '-1.5s' }} />
       </div>
 
-      {/* 실시간 커서 캔버스 */}
-      <CursorCanvas />
+      {/* 실시간 커서 캔버스 - Projects 뷰에서는 숨김 */}
+      <CursorCanvas isVisible={currentView === 'home'} />
 
       {/* Left Sidebar - Logo & Social */}
       <div className="fixed left-0 top-0 h-screen flex flex-col items-center justify-between py-8 md:py-12 px-4 md:px-8 z-50">
         <div className="flex flex-col items-center gap-4 md:gap-6">
           {/* Logo */}
           <div className="w-12 h-12 md:w-16 md:h-16 rounded-full glass-strong flex items-center justify-center text-xl md:text-2xl font-bold gradient-text shadow-lg">
-            M
+            DL
           </div>
           {/* GitHub Icon */}
           <a

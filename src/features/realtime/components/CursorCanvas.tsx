@@ -9,7 +9,11 @@ import { useRealtimeCursors } from '../hooks/useRealtimeCursors';
 import { CursorPointer } from './CursorPointer';
 import { NicknameModal } from './NicknameModal';
 
-export const CursorCanvas = () => {
+interface CursorCanvasProps {
+  isVisible?: boolean; // Projects 뷰에서 커서 숨김용
+}
+
+export const CursorCanvas = ({ isVisible = true }: CursorCanvasProps) => {
   const { cursors, isConnected, handleMouseMove, setUserName, userName } = useRealtimeCursors();
   const [showNicknameModal, setShowNicknameModal] = useState(false);
 
@@ -80,12 +84,14 @@ export const CursorCanvas = () => {
         )}
       </div>
 
-      {/* 다른 사용자의 커서들 렌더링 */}
-      <AnimatePresence>
-        {cursors.map((cursor) => (
-          <CursorPointer key={cursor.id} cursor={cursor} />
-        ))}
-      </AnimatePresence>
+      {/* 다른 사용자의 커서들 렌더링 - isVisible이 true일 때만 */}
+      {isVisible && (
+        <AnimatePresence>
+          {cursors.map((cursor) => (
+            <CursorPointer key={cursor.id} cursor={cursor} />
+          ))}
+        </AnimatePresence>
+      )}
     </>
   );
 };

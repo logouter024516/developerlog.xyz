@@ -5,15 +5,21 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-// 환경변수로 관리 (개발 시 임시값 사용)
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'YOUR_SUPABASE_URL';
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'YOUR_SUPABASE_ANON_KEY';
+// 환경변수로 관리 (배포 시 실제 값 사용)
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+console.log('✅ Supabase URL:', SUPABASE_URL);
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   realtime: {
     params: {
-      eventsPerSecond: 10, // Rate limiting
+      eventsPerSecond: 10,
     },
+    timeout: 30000,
+  },
+  auth: {
+    persistSession: false,
   },
 });
 
