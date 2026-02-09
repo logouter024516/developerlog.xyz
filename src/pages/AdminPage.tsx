@@ -38,7 +38,7 @@ export const AdminPage = () => {
           setSettings(data);
           console.log('✅ 설정 불러오기 성공:', data);
         }
-      } catch (error) {
+      } catch {
         console.log('설정 파일이 없거나 불러오기 실패, 기본값 사용');
       }
     };
@@ -125,7 +125,7 @@ export const AdminPage = () => {
           const data = await getResponse.json();
           sha = data.sha;
         }
-      } catch (e) {
+      } catch {
         console.log('파일이 존재하지 않음, 새로 생성합니다.');
       }
 

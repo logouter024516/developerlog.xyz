@@ -74,23 +74,27 @@ if (GITHUB_TOKEN) {
 
 /**
  * 🎯 레포 필터링 체크 (GitHub 저장소 기반 - 모든 사용자 공통 적용)
- * @param repoName - 레포지토리 이름
- * @returns 표시 여부
  */
-async function getRepoSettings(): Promise<any> {
+interface RepoSettings {
+  showOnlyMode: boolean;
+  hiddenRepos: string[];
+  selectedRepos: string[];
+}
+
+async function getRepoSettings(): Promise<RepoSettings | null> {
   try {
     // GitHub에 저장된 설정 파일 불러오기
     const response = await fetch('/repo-settings.json?' + Date.now()); // 캐시 방지
     if (response.ok) {
       return await response.json();
     }
-  } catch (e) {
+  } catch {
     console.log('설정 파일 없음, 기본값 사용');
   }
   return null;
 }
 
-function shouldShowRepo(repoName: string, settings: any): boolean {
+function shouldShowRepo(repoName: string, settings: RepoSettings | null): boolean {
   // 1. GitHub 설정 파일 확인 (관리자가 설정한 공통 필터)
   if (settings) {
     if (settings.showOnlyMode) {
