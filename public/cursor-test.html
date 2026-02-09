@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cursor Test - Supabase Realtime</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #1a1a2e;
+      color: white;
+      font-family: system-ui, -apple-system, sans-serif;
+      overflow: hidden;
+      height: 100vh;
+    }
+
+    .info {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 20px;
+      border-radius: 10px;
+      z-index: 1000;
+    }
+
+    .status {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ef4444;
+      margin-right: 8px;
+    }
+
+    .status.connected {
+      background: #10b981;
+    }
+
+    .cursor {
+      position: fixed;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 999;
+      transition: all 0.1s ease-out;
+    }
+
+    .cursor::after {
+      content: attr(data-name);
+      position: absolute;
+      top: -25px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .instructions {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.7);
+      padding: 15px 30px;
+      border-radius: 10px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="info">
+    <div>
+      <span class="status" id="status"></span>
+      <span id="statusText">Connecting...</span>
+    </div>
+    <div style="margin-top: 10px; font-size: 14px; color: #888;">
+      커서 수: <span id="cursorCount">0</span>
+    </div>
+  </div>
+
+  <div class="instructions">
+    📍 새 탭을 열어서 이 페이지를 다시 열면 실시간 커서 동기화를 볼 수 있어요!
+  </div>
+
+  <script type="module">
+    // Supabase Client 설정
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+    const SUPABASE_URL = 'https://kicdxjelgpfcyqoafhsz.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpY2R4amVsZ3BmY3lxb2FmaHN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg5OTAyMTEsImV4cCI6MjA1NDU2NjIxMX0.sb_publishable_dj_I91DAbuI_J1QwL8psJg_JcFqwiso';
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      realtime: {
+        params: {
+          eventsPerSecond: 10,
+        },
+      },
+    });
+
+    // 사용자 ID 생성
+    const userId = `user_${Math.random().toString(36).substr(2, 9)}`;
+    const userColor = `hsl(${Math.floor(Math.random() * 360)}, 70%, 60%)`;
+
+    // 커서 저장소
+    const cursors = {};
+
+    // UI 업데이트
+    const updateUI = () => {
+      document.getElementById('cursorCount').textContent = Object.keys(cursors).length;
+    };
+
+    // 커서 추가
+    const addCursor = (cursor) => {
+      if (cursors[cursor.id]) {
+        // 이미 존재하면 위치만 업데이트
+        cursors[cursor.id].x = cursor.x;
+        cursors[cursor.id].y = cursor.y;
+        cursors[cursor.id].el.style.left = `${cursor.x}%`;
+        cursors[cursor.id].el.style.top = `${cursor.y}%`;
+        return;
+      }
+
+      const el = document.createElement('div');
+      el.className = 'cursor';
+      el.style.background = cursor.color;
+      el.style.boxShadow = `0 0 20px ${cursor.color}`;
+      el.setAttribute('data-name', cursor.userName);
+      el.style.left = `${cursor.x}%`;
+      el.style.top = `${cursor.y}%`;
+      document.body.appendChild(el);
+
+      cursors[cursor.id] = { el, x: cursor.x, y: cursor.y };
+      updateUI();
+    };
+
+    // 커서 제거
+    const removeCursor = (id) => {
+      if (cursors[id]) {
+        cursors[id].el.remove();
+        delete cursors[id];
+        updateUI();
+      }
+    };
+
+    // Supabase 채널 구독
+    const channel = supabase.channel('portfolio:cursors', {
+      config: {
+        broadcast: { self: false },
+      },
+    });
+
+    channel
+      .on('broadcast', { event: 'cursor_move' }, ({ payload }) => {
+        console.log('📍 Cursor move:', payload);
+        addCursor(payload);
+      })
+      .on('broadcast', { event: 'cursor_leave' }, ({ payload }) => {
+        console.log('👋 Cursor leave:', payload);
+        removeCursor(payload.id);
+      })
+      .subscribe((status) => {
+        console.log('🔌 Channel status:', status);
+        const statusEl = document.getElementById('status');
+        const statusText = document.getElementById('statusText');
+
+        if (status === 'SUBSCRIBED') {
+          statusEl.classList.add('connected');
+          statusText.textContent = 'Connected ✅';
+        } else {
+          statusEl.classList.remove('connected');
+          statusText.textContent = `Status: ${status}`;
+        }
+      });
+
+    // 마우스 이동 이벤트
+    let lastSend = 0;
+    document.addEventListener('mousemove', (e) => {
+      const now = Date.now();
+      if (now - lastSend < 100) return; // throttle
+      lastSend = now;
+
+      const x = (e.clientX / window.innerWidth) * 100;
+      const y = (e.clientY / window.innerHeight) * 100;
+
+      channel.send({
+        type: 'broadcast',
+        event: 'cursor_move',
+        payload: {
+          id: userId,
+          x,
+          y,
+          userName: `User ${userId.slice(-4)}`,
+          color: userColor,
+        },
+      });
+    });
+
+    // 떠날 때
+    window.addEventListener('beforeunload', () => {
+      channel.send({
+        type: 'broadcast',
+        event: 'cursor_leave',
+        payload: { id: userId },
+      });
+    });
+
+    console.log('🚀 Test page loaded!');
+    console.log('👤 Your ID:', userId);
+    console.log('🎨 Your Color:', userColor);
+  </script>
+</body>
+</html>
