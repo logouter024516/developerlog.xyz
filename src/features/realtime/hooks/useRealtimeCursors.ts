@@ -8,7 +8,8 @@
  */
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { throttle } from 'lodash';
+import throttle from 'lodash/throttle';
+import type { DebouncedFunc } from 'lodash';
 import { supabase, CURSOR_CHANNEL } from '../../../lib/supabase';
 import type { Cursor } from '../../../types';
 
@@ -33,7 +34,7 @@ export const useRealtimeCursors = () => {
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const userIdRef = useRef<string>(generateUserId());
   const userColorRef = useRef<string>(generateRandomColor());
-  const throttledSendRef = useRef<((x: number, y: number) => void) | null>(null);
+  const throttledSendRef = useRef<DebouncedFunc<(x: number, y: number) => void> | null>(null);
 
   // throttle 함수 초기화
   useEffect(() => {
